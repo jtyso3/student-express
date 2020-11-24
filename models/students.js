@@ -1,16 +1,23 @@
+
+//      This provides data base framework for table. 
 module.exports = (sequelize, DataTypes) => {
     let Student = sequelize.define('Student', {
         name:{
-            type: DataTypes.STRING
+            type: DataTypes.STRING,
+            allowNull: false,
         }, starID: {
-            type: DataTypes.STRING
+            type: DataTypes.STRING,
+            allowNull: false,
+            unique: true
         },present:{ 
-            type: DataTypes.BOOLEAN
+            type: DataTypes.BOOLEAN,
+            allowNull: false,
+            defaultValue: false
         }
     })
 
-    Student.sync({force: true}).then( ()=> {
-        console.log('synced studnet table')
+    Student.sync({force: false}).then( ()=> {
+        console.log('synced student table')
     })
     return Student
 }

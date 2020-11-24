@@ -21,10 +21,7 @@ export default {
   name: 'app',
   data() {
     return {
-      students: [
-        { name: 'Example', 'starID': 'aa1234aa', present: true },
-        { name: 'Test', 'starID': 'bb5678bb', present: false },
-      ],
+      students: [],
       mostRecentStudent: {}
     }
   },
@@ -33,28 +30,42 @@ export default {
     StudentTable,
     StudentMessage
   },
+  mounted(){
+      //    runs updateStudents() on start-up? (I think, I need look at this further)
+    this.updateStudents()
+  },
   methods: {
+    //    adds student, updates students
     newStudentAdded(student) {
-      this.students.push(student)
-      this.students.sort(function(s1, s2) {
-        return s1.name.toLowerCase() < s2.name.toLowerCase() ? -1 : 1
+      this.$student_api.addStudent(student).then( student => {
+        this.updateStudents()
+      }).catch(err => {
+        let msg = err.response.data.join(', ')
+        alert('Error adding student. \n' + msg)
       })
     },
+    //    displays message, changes value of present (boolean), updates students
     studentArrivedOrLeft(student, present) {
-      // find student in this.students, set present value 
-      let updateStudent = this.students.find( function(s) {
-        if (s.name === student.name && s.starID === student.starID) {
-          return true
-        }
-      })
-      if (updateStudent) {
-        updateStudent.present = present
+      student.present = present
+      this.$student_api.updateStudent(student).then( () => {
         this.mostRecentStudent = student
-      }
+        this.updateStudents()
+      })          
     },
+    //    deletes selected students, and updated students
     studentDeleted(student) {
-      this.students = this.students.filter( function(s) { return s != student })
-      this.mostRecentStudent = {}   // clears welcome/goodbye message
+      this.$student_api.deleteStudent( student.id).then( () => {
+        this.updateStudents()
+        this.mostRecentStudent = {}
+      })
+    },    //    Sort by starID, updates students
+    updateStudents(){
+      this.$student_api.getAllStudents().then( students => { 
+      students.sort(function(s1, s2) {
+        return s1.starID.toLowerCase() < s2.starID.toLowerCase() ? -1 : 1
+      })
+      this.students=students
+      })
     }
   }
 }
